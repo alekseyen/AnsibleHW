@@ -1,0 +1,4 @@
+---
+# vars file for nginx
+file_name: service_state
+host_name: service_data
