@@ -1,0 +1,13 @@
+---
+# handlers file for common
+  - name: Mysql start
+    become: yes
+    service: name=mysql state=started
+
+  - name: Mysql restart
+    become: yes
+    service: name=mysql state=restarted
+
+  - name: Mysql reload
+    become: yes
+    service: name=mysql state=reloaded

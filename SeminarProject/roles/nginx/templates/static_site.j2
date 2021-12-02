@@ -1,0 +1,10 @@
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        #root /home/vagrant/static-site;
+        server_name _;
+        location / {
+		proxy_pass http://{{back}}/;
+                try_files $uri $uri/ =404;
+        }
+}

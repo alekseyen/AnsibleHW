@@ -1,0 +1,49 @@
+---
+# tasks file for apache
+    - name: Install Packages
+      become: yes
+      yum: pkg={{ item }} state=latest
+      loop: [ 'httpd', 'php', 'php-mysql' ]
+      notify: Restart Apache
+
+    - name: Start service httpd, if not running
+      become: yes
+      service:
+        name: httpd
+        state: started
+
+    - name: Create document root
+      become: yes
+      file:
+        path: "/var/www/{{ http_host }}"
+        state: directory
+        owner: "{{ app_user }}"
+        mode: '0755'
+
+    - name: Set up Apache virtualhost
+      become: yes
+      template:
+        src: "apache.conf.j2"
+        dest: "/etc/httpd/conf.d/{{ http_conf }}"
+      notify: Restart Apache
+
+    - name: allow Apache network connect
+      become: yes
+      shell: setsebool -P httpd_can_network_connect=1
+
+    - name: allow Apache network connect to DB
+      become: yes
+      shell: setsebool -P httpd_can_network_connect_db on
+
+    - name: copy adminer
+      become: yes
+      copy:
+        src: "files/adminer.php"
+        dest: "/var/www/{{ http_host }}/index.php"
+
+  # PHP Info Page
+    - name: Sets Up PHP Info Page
+      become: yes
+      template:
+        src: "info.php.j2"
+        dest: "/var/www/{{ http_host }}/info.php"

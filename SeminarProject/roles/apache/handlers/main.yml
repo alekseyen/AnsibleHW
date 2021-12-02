@@ -1,0 +1,19 @@
+---
+# handlers file for apache
+    - name: Reload Apache
+      become: yes
+      service:
+        name: httpd
+        state: reloaded
+
+    - name: Start Apache
+      become: yes
+      service:
+        name: httpd
+        state: restarted
+
+    - name: Restart Apache
+      become: yes
+      service:
+        name: httpd
+        state: restarted

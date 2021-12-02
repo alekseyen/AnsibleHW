@@ -1,0 +1,30 @@
+---
+
+  - name: ensure nginx is at the latest version
+    apt: name=nginx state=latest
+    register: nginx_installed
+    become: yes
+    notify:
+      - Nginx restart
+
+  - name: copy the nginx config file and restart nginx
+    when: nginx_installed is succeeded
+    template: src=static_site.j2 dest=/etc/nginx/sites-available/static_site.conf
+    become: yes
+    register: nginx_conf_copy
+
+  - name: create symlink
+    when: nginx_conf_copy is succeeded
+    file:
+      src: /etc/nginx/sites-available/static_site.conf
+      dest: /etc/nginx/sites-enabled/default
+      state: link
+    become: yes
+
+  - name: check and reload
+    become: yes
+    when: nginx_conf_copy.changed
+    shell: /usr/sbin/nginx -t
+    notify:
+      - Nginx reload
+

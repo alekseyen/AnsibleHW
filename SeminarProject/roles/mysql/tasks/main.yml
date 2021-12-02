@@ -1,0 +1,50 @@
+- name: Install MySQL server
+  become: yes
+  apt:
+    pkg: "{{ item }}"
+    update_cache: true
+  with_items:
+    - mysql-server
+    - mysql-client
+    - python-mysqldb
+
+- name: Change root password (fail is not a problem)
+  become: yes
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_password }}"
+  ignore_errors: yes
+
+- name: creating database
+  become: yes
+  mysql_db:
+    name: "{{ db_name }}"
+    state: "present"
+    login_user: "root"
+    login_password: "{{ mysql_root_password }}"
+
+- name: creating database user
+  become: yes
+  mysql_user:
+    name: "{{ db_user }}"
+    host: '%'
+    password: "{{ db_password }}"
+    priv: "{{ db_name }}.*:ALL"
+    state: "present"
+    login_user: "root"
+    login_password: "{{ mysql_root_password }}"
+
+- name: ensure mysql is configured to bind to the specified address and port
+  become: yes
+  ini_file:
+    dest: /etc/mysql/my.cnf
+    section: mysqld
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  register: my_cnf
+  with_items:
+    - { option: bind-address, value: "{{ mysql_bind_address }}" }
+    - { option: port, value: "{{ mysql_port }}" }
+  notify:
+    - Mysql restart
+
